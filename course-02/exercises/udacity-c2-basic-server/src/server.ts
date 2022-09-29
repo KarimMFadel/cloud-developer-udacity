@@ -72,13 +72,66 @@ import { Car, cars as cars_list } from './cars';
 
   // @TODO Add an endpoint to GET a list of cars
   // it should be filterable by make with a query paramater
+  app.get("/cars/", ( req: Request, res: Response ) => {
+    
+    let { make } = req.query;
+
+    let cars_list = cars;
+
+      // if we have an optional query paramater, filter by it
+      if (make) {
+        cars_list = cars.filter((car) => car.make === make);
+      }
+
+    // return res.status(200).send(cars.find(car => car.make===make));  // return first result
+    return res.status(200).send(cars_list);
+  });
 
   // @TODO Add an endpoint to get a specific car
   // it should require id
   // it should fail gracefully if no matching car is found
+  app.get("/cars/:id", ( req: Request, res: Response ) => {
+    
+    let {id} = req.params;
+
+    if (!id) { 
+      // respond with an error if not
+      return res.status(400).send(`id is required`);
+    }
+    // var idCondition:Number =  +id;
+    // try to find the car by id
+    const car = cars.filter((car) => car.id === +id);
+
+    if (car && car.length === 0) {
+      return res.status(400).send(`There is no data with this id : ${id}`);
+    }
+
+    return res.status(200).send(car);
+  });
 
   /// @TODO Add an endpoint to post a new car to our list
   // it should require id, type, model, and cost
+  app.post("/cars/", 
+    async(req: Request, res: Response) => {
+      // const { make } = req.body.make;
+      // const { type } = req.body.type;
+      // const { model } = req.body.model;
+      // const { cost } = req.body.cost;
+      // const { id } = req.body.id;
+      let { make, type, model, cost, id } = req.body;
+
+      if (!make || !type || !model || !cost || !id) {
+        return res.status(400)
+                  .send(`missing Data`);
+      }
+
+      const newcar: Car = {make:make, type:type, id:id, model:model, cost:cost};
+
+      cars.push(newcar);
+
+      return res.status(200)
+                .send(newcar);
+    });
 
   // Start the Server
   app.listen( port, () => {
