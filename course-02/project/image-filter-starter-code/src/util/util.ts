@@ -1,6 +1,8 @@
 import fs from "fs";
 import Jimp = require("jimp");
 
+import { config } from '../config/config';
+
 // filterImageFromURL
 // helper function to download, filter, and save the filtered image locally
 // returns the absolute path to the local image
@@ -13,7 +15,7 @@ export async function filterImageFromURL(inputURL: string): Promise<string> {
     try {
       const photo = await Jimp.read(inputURL);
       const outpath =
-        "/tmp/filtered." + Math.floor(Math.random() * 2000) + ".jpg";
+        config.path.filteredImage + Math.floor(Math.random() * 2000) + ".jpg";
       await photo
         .resize(256, 256) // resize
         .quality(60) // set JPEG quality
