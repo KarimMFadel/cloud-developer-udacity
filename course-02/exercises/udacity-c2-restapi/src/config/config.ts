@@ -10,7 +10,7 @@ export const config = {
     "aws_media_bucket": process.env.UDAGRAM_AWS_BUCKET
   },
   "jwt": {
-    "secret": " "
+    "secret": process.env.UDAGRAM_JWT_SECRET
   },
   "prod": {
     "username": "",
