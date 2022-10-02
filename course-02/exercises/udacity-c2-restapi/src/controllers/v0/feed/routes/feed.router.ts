@@ -16,22 +16,13 @@ router.get('/', async (req: Request, res: Response) => {
     res.send(items);
 });
 
-//@TODO
-//Add an endpoint to GET a specific resource by Primary Key
+//GET a specific resource by Primary Key
 router.get('/:id',
    async (req: Request, res: Response) => {
-    let { id } = req.params;
-
-    if ( !id ) {
-        return res.status(400).send(`id is required`);
-    }
-
-    const feed = await FeedItem.findByPk(id);
-
-    if (feed == null) {
-        return res.status(400).send(`There is no feed with this id : ${id}`);
-    }
-
+    let id = +req.params.id;
+    const feed = await getFeedByPK(id, res);
+    if(feed == null)
+        return res;
     return res.status(200).send(feed);
    })
 
@@ -39,10 +30,15 @@ router.get('/:id',
 router.patch('/:id', 
     requireAuth, 
     async (req: Request, res: Response) => {
-        //@TODO try it yourself
-        res.status(500).send("not implemented")
-});
+    let id = +req.params.id;
+    const feed = await getFeedByPK(id, res);
+    if(feed == null)
+        return res;
+    const newCaption = validAndGetCaption(req, res);
 
+    const updatedFeeed = await feed.update({caption : newCaption},{where:{id:id}})
+    res.status(204).send(updatedFeeed);
+});
 
 // Get a signed url to put a new item in the bucket
 router.get('/signed-url/:fileName', 
@@ -59,18 +55,8 @@ router.get('/signed-url/:fileName',
 router.post('/', 
     requireAuth, 
     async (req: Request, res: Response) => {
-    const caption = req.body.caption;
-    const fileName = req.body.url;
-
-    // check Caption is valid
-    if (!caption) {
-        return res.status(400).send({ message: 'Caption is required or malformed' });
-    }
-
-    // check Filename is valid
-    if (!fileName) {
-        return res.status(400).send({ message: 'File url is required' });
-    }
+    const caption = validAndGetCaption(req, res);
+    const fileName = validAndGetURL(req, res);
 
     const item = await new FeedItem({
             caption: caption,
@@ -82,5 +68,37 @@ router.post('/',
     saved_item.url = AWS.getGetSignedUrl(saved_item.url);
     res.status(201).send(saved_item);
 });
+
+async function getFeedByPK(id: number, res: Response) : Promise<FeedItem> {
+    if ( !id ) {
+        res.status(400).send(`id is required`);
+        return null;
+    }
+    const feed =  await FeedItem.findByPk(id);
+    
+    if (feed == null) {
+        res.status(400).send(`There is no feed with this id : ${id}`);
+        return null;
+    }
+    return feed;
+}
+
+function validAndGetCaption(req: Request, res: Response) {
+    const caption = req.body.caption;
+    // check Caption is valid
+    if (!caption) {
+        return res.status(400).send({ message: 'Caption is required or malformed' });
+    }
+    return caption;
+}
+
+function validAndGetURL(req: Request, res: Response) {
+    const fileName = req.body.url;
+    // check Filename is valid
+    if (!fileName) {
+        return res.status(400).send({ message: 'File url is required' });
+    }
+    return fileName;
+}
 
 export const FeedRouter: Router = router;
