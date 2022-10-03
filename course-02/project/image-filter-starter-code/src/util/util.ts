@@ -1,6 +1,5 @@
 import fs from "fs";
 import Jimp = require("jimp");
-
 import { config } from '../config/config';
 
 // filterImageFromURL

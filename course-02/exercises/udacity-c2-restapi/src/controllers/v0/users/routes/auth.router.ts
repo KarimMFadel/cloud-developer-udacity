@@ -32,7 +32,6 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
         return res.status(401).send({ message: 'No authorization headers.' });
     }
     
-
     const token_bearer = req.headers.authorization.split(' ');
     if(token_bearer.length != 2){
         return res.status(401).send({ message: 'Malformed token.' });

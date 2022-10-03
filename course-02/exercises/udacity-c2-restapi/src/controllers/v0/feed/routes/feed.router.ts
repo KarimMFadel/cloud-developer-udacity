@@ -6,7 +6,7 @@ import * as AWS from '../../../../aws';
 const router: Router = Router();
 
 // Get all feed items
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', requireAuth, async (req: Request, res: Response) => {
     const items = await FeedItem.findAndCountAll({order: [['id', 'DESC']]});
     items.rows.map((item) => {
             if(item.url) {
@@ -17,7 +17,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 //GET a specific resource by Primary Key
-router.get('/:id',
+router.get('/:id', 
+   requireAuth,
    async (req: Request, res: Response) => {
     let id = +req.params.id;
     const feed = await getFeedByPK(id, res);
@@ -30,7 +31,7 @@ router.get('/:id',
 router.patch('/:id', 
     requireAuth, 
     async (req: Request, res: Response) => {
-    let id = +req.params.id;
+    let id : number = +req.params.id;
     const feed = await getFeedByPK(id, res);
     if(feed == null)
         return res;
